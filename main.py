@@ -3,6 +3,8 @@ import time
 from AlphaBot import AlphaBot
 from Infrared_Line_Tracking import TRSensor
 
+WHEEL_CIR = 0.64
+
 #Encoder
 cntl = 8
 cntr = 7
@@ -47,39 +49,58 @@ if __name__ == "__main__":
     TR = TRSensor()
     Ab.stop()
     time.sleep(0.5)
-    Ab.forward()
-
+    reset = "N"
     usr = input("Begin Calibration")
 
-    while (reset != "Y"):
+    # Wiggle the 
+    for i in range(0,400):#(reset != "Y"):
         TR.calibrate()
-        print("Max:", TR.calibratedMax)
-        print("Min:", TR.calibratedMin)
-        reset = input("Recalibrate (Y/N)")
+        
+    print("Max:", TR.calibratedMax)
+    print("Min:", TR.calibratedMin)
+    
+        
     dist = int(input("Distance to Travel(inches): "))
 
     R0 = EncR
-    nt = 2
+    R1 = EncL 
+    
+    nt = dist * (40 / WHEEL_CIR) 
     
 
     integral = 0
-    last_proportional = 0 
-    while True: #(EncR - R0)/40 < nt:
+    last_proportional = 0
+    maximum = 50
+    
+    Ab.backward()
+    while (((EncR - R0)/40 < nt) or ((EncL - R1)/40 < nt)):
 
         # 0 1000 2000 3000 4000 ( Resepctive sensor readings ) 2000 suggests middle alignment
-        position = TR.readLine() 
-        print(position)
+        position = TR.readLine(white_line = 0) 
+        #print(position)
+        
         # negative (Too left) positive (Too right) 
-        #proportional = position - 2000 
+        proportional = position - 2000 
 
         # Error derivative 
-        #derivative = proportional - last_proportional
+        derivative = proportional - last_proportional
 
         # Keeps track of last position for refernce 
         last_proportional = proportional
-        #
+        
 
+        power_difference = proportional/25 #+ derivative/100 #+ integral/1000;  
 
-
+        if (power_difference > maximum):
+            power_difference = maximum
+        if (power_difference < - maximum):
+            power_difference = - maximum
+        print(position,power_difference)
+        if (power_difference < 0):
+            Ab.setPWMB(maximum + power_difference)
+            Ab.setPWMA(maximum)
+        else:
+            Ab.setPWMB(maximum)
+            Ab.setPWMA(maximum - power_difference)
 
     Ab.stop()
