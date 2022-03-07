@@ -64,13 +64,21 @@ if __name__ == "__main__":
 
     integral = 0
     last_proportional = 0 
-    while (EncR - R0)/40 < nt:
+    while True: #(EncR - R0)/40 < nt:
 
         # 0 1000 2000 3000 4000 ( Resepctive sensor readings ) 2000 suggests middle alignment
         position = TR.readLine() 
-
+        print(position)
         # negative (Too left) positive (Too right) 
-        proportional = position - 2000 
+        #proportional = position - 2000 
+
+        # Error derivative 
+        #derivative = proportional - last_proportional
+
+        # Keeps track of last position for refernce 
+        last_proportional = proportional
+        #
+
 
 
 
