@@ -68,7 +68,7 @@ class TRSensor(object):
 		min_sensor_values = [0]*self.numSensors
 		for j in range(0,10):
 		
-			sensor_values = self.AnalogRead();
+			sensor_values = self.AnalogRead()
 			
 			for i in range(0,self.numSensors):
 			
@@ -97,7 +97,7 @@ class TRSensor(object):
 	def	readCalibrated(self):
 		value = 0
 		#read the needed values
-		sensor_values = self.AnalogRead();
+		sensor_values = self.AnalogRead()
 
 		for i in range (0,self.numSensors):
 
@@ -153,14 +153,14 @@ class TRSensor(object):
 				
 			# only average in values that are above a noise threshold
 			if(value > 50):
-				avg += value * (i * 1000);  # this is for the weighted total,
-				sum += value;                  #this is for the denominator 
+				avg += value * (i * 1000)  # this is for the weighted total,
+				sum += value                 #this is for the denominator 
 
 		if(on_line != 1):
 			# If it last read to the left of center, return 0.
 			if(self.last_value < (self.numSensors - 1)*1000/2):
 				#print("left")
-				return 0;
+				return 0
 	
 			# If it last read to the right of center, return the max.
 			else:
@@ -183,8 +183,8 @@ if __name__ == '__main__':
 
 	from AlphaBot import AlphaBot
 	
-	maximum = 35;
-	integral = 0;
+	maximum = 35
+	integral = 0
 	last_proportional = 0
 	
 	TR = TRSensor()
@@ -194,7 +194,7 @@ if __name__ == '__main__':
 	time.sleep(0.5)
 	for i in range(0,400):
 		TR.calibrate()
-		print i
+		print(i)
 	print(TR.calibratedMin)
 	print(TR.calibratedMax)
 	time.sleep(0.5)	
@@ -231,9 +231,9 @@ if __name__ == '__main__':
 		print(position,power_difference)
 		if (power_difference < 0):
 			Ab.setPWMB(maximum + power_difference)
-			Ab.setPWMA(maximum);
+			Ab.setPWMA(maximum)
 		else:
-			Ab.setPWMB(maximum);
+			Ab.setPWMB(maximum)
 			Ab.setPWMA(maximum - power_difference)
 			 
 

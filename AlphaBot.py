@@ -62,19 +62,19 @@ class AlphaBot(object):
 		self.PWMB.ChangeDutyCycle(value)	
 		
 	def setMotor(self, left, right):
-		if((right >= 0) and (right <= 100)):
+		if((right >= 0) and (right <= 100)): #[0, 100] Right Forward
 			GPIO.output(self.IN1,GPIO.HIGH)
 			GPIO.output(self.IN2,GPIO.LOW)
 			self.PWMA.ChangeDutyCycle(right)
-		elif((right < 0) and (right >= -100)):
+		elif((right < 0) and (right >= -100)): #(0, -100] Right Backward
 			GPIO.output(self.IN1,GPIO.LOW)
 			GPIO.output(self.IN2,GPIO.HIGH)
 			self.PWMA.ChangeDutyCycle(0 - right)
-		if((left >= 0) and (left <= 100)):
+		if((left >= 0) and (left <= 100)): #[0, 100] Left Backward
 			GPIO.output(self.IN3,GPIO.HIGH)
 			GPIO.output(self.IN4,GPIO.LOW)
 			self.PWMB.ChangeDutyCycle(left)
-		elif((left < 0) and (left >= -100)):
+		elif((left < 0) and (left >= -100)): #(0, -100] Left Forward
 			GPIO.output(self.IN3,GPIO.LOW)
 			GPIO.output(self.IN4,GPIO.HIGH)
 			self.PWMB.ChangeDutyCycle(0 - left)
