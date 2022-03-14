@@ -3,6 +3,7 @@ import time
 from AlphaBot import AlphaBot
 from Infrared_Line_Tracking import TRSensor
 
+# Wheel Circumference (Inches) 
 WHEEL_CIR = 8.64
 
 #Encoder
@@ -28,7 +29,7 @@ def updateEncoderR(channel):
     EncR += 1
     #print('valEncR = %d' %EncR)
 
-
+# Encoder Pins 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(cntr, GPIO.IN)
@@ -36,6 +37,7 @@ GPIO.setup(cntl, GPIO.IN)
 GPIO.add_event_detect(cntr, GPIO.BOTH, updateEncoderR)
 GPIO.add_event_detect(cntl, GPIO.BOTH, updateEncoderL)
 
+# PINS for IR Data Lines 
 GPIO.setup(Clock,GPIO.OUT)
 GPIO.setup(Address,GPIO.OUT)
 GPIO.setup(CS,GPIO.OUT)
@@ -44,12 +46,12 @@ GPIO.setup(DataOut,GPIO.IN,GPIO.PUD_UP)
 
 
 if __name__ == "__main__":
-    '''
-    1 turn of a wheel will result in 40 counts of encoder.
-    ''' 
+    # Initialize Robot and IR Sensors 
     Ab = AlphaBot()
     TR = TRSensor()
     Ab.stop()
+
+
     time.sleep(0.5)
     usr = input("Begin Calibration")
 
@@ -71,6 +73,7 @@ if __name__ == "__main__":
     # Left Encoder not working
     #R1 = EncL 
     
+    # Number of Encdoer counts 
     ncount = dist * (40 / WHEEL_CIR) 
     
     integral = 0
@@ -78,7 +81,7 @@ if __name__ == "__main__":
     maximum = 40
     
     Ab.backward()
-    while (((EncR - start) < ncount)):# and ((EncL - R1) < nt)):
+    while (((EncR - start) < ncount)):
         #print(EncR, EncL)
         
         #Current Distance Traveled
@@ -97,16 +100,17 @@ if __name__ == "__main__":
         # Keeps track of last position for refernce 
         last_proportional = proportional
         
-
+        # Difference required for correction
         power_difference = proportional/25 + derivative/100  
         
+        #Ensures power_difference is in scope of declared duty cycle
         if (power_difference > maximum):
             power_difference = maximum
             
         if (power_difference < - maximum):
             power_difference = - maximum
         
-        
+        # Sets the PWM signal of R and L wheel to correct rotation 
         
         if (power_difference < 0):
             Ab.setPWMB(maximum + power_difference)
@@ -116,6 +120,6 @@ if __name__ == "__main__":
            Ab.setPWMA(maximum - power_difference)
             
             
-            
+    # Out of Loop, END        
     print('Reached Distance')
     Ab.stop()
