@@ -3,7 +3,8 @@ import time
 from AlphaBot import AlphaBot
 from Infrared_Line_Tracking import TRSensor
 
-WHEEL_CIR = 0.64
+# Wheel Circumference (Inches) 
+WHEEL_CIR = 8.64
 
 #Encoder
 cntl = 8
@@ -28,53 +29,64 @@ def updateEncoderR(channel):
     EncR += 1
     #print('valEncR = %d' %EncR)
 
-
+# Encoder Pins 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(cntr, GPIO.IN)
 GPIO.setup(cntl, GPIO.IN)
+GPIO.add_event_detect(cntr, GPIO.BOTH, updateEncoderR)
+GPIO.add_event_detect(cntl, GPIO.BOTH, updateEncoderL)
+
+# PINS for IR Data Lines 
 GPIO.setup(Clock,GPIO.OUT)
 GPIO.setup(Address,GPIO.OUT)
 GPIO.setup(CS,GPIO.OUT)
 GPIO.setup(DataOut,GPIO.IN,GPIO.PUD_UP)
-GPIO.add_event_detect(cntr, GPIO.BOTH, updateEncoderR)
-GPIO.add_event_detect(cntl, GPIO.BOTH, updateEncoderL)
+
 
 
 if __name__ == "__main__":
-    '''
-    1 turn of a wheel will result in 40 counts of encoder.
-    ''' 
+    # Initialize Robot and IR Sensors 
     Ab = AlphaBot()
     TR = TRSensor()
     Ab.stop()
+
+
     time.sleep(0.5)
-    reset = "N"
     usr = input("Begin Calibration")
 
     # Wiggle the 
     for i in range(0,400):#(reset != "Y"):
         TR.calibrate()
-        
+    
+    # [ L , ... , R] [0, 1000]
+    # Must have large difference in Max - Min for higher sensitivty 
     print("Max:", TR.calibratedMax)
     print("Min:", TR.calibratedMin)
     
-        
-    dist = int(input("Distance to Travel(inches): "))
-
-    R0 = EncR
-    R1 = EncL 
+    # User Input distance to travel (Floating point) Inches
+    dist = float(input("Distance to Travel(inches): "))
     
-    nt = dist * (40 / WHEEL_CIR) 
+    # Starting position of the encoder, used as reference 
+    start = EncR
     
-
+    # Left Encoder not working
+    #R1 = EncL 
+    
+    # Number of Encdoer counts 
+    ncount = dist * (40 / WHEEL_CIR) 
+    
     integral = 0
     last_proportional = 0
-    maximum = 50
+    maximum = 40
     
     Ab.backward()
-    while (((EncR - R0)/40 < nt) or ((EncL - R1)/40 < nt)):
-
+    while (((EncR - start) < ncount)):
+        #print(EncR, EncL)
+        
+        #Current Distance Traveled
+        print("Current Distance:",((EncR - start) / 40) * WHEEL_CIR) 
+        
         # 0 1000 2000 3000 4000 ( Resepctive sensor readings ) 2000 suggests middle alignment
         position = TR.readLine(white_line = 0) 
         #print(position)
@@ -88,19 +100,26 @@ if __name__ == "__main__":
         # Keeps track of last position for refernce 
         last_proportional = proportional
         
-
-        power_difference = proportional/25 #+ derivative/100 #+ integral/1000;  
-
+        # Difference required for correction
+        power_difference = proportional/25 + derivative/100  
+        
+        #Ensures power_difference is in scope of declared duty cycle
         if (power_difference > maximum):
             power_difference = maximum
+            
         if (power_difference < - maximum):
             power_difference = - maximum
-        print(position,power_difference)
+        
+        # Sets the PWM signal of R and L wheel to correct rotation 
+        
         if (power_difference < 0):
             Ab.setPWMB(maximum + power_difference)
             Ab.setPWMA(maximum)
         else:
-            Ab.setPWMB(maximum)
-            Ab.setPWMA(maximum - power_difference)
-
+           Ab.setPWMB(maximum)
+           Ab.setPWMA(maximum - power_difference)
+            
+            
+    # Out of Loop, END        
+    print('Reached Distance')
     Ab.stop()
