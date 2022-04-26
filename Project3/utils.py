@@ -16,7 +16,13 @@ def cvdata2transmtx(rvec,tvec):
     return g, R, p
 
 def cvdata2transmtx2(rvec,tvec):
+    R_temp = cv2.Rodrigues(rvec)[0]
+    p_temp = tvec.reshape(-1,1)
+    R = R_temp
+    p = -R.dot(p_temp)
+    g = np.vstack((np.hstack((R,p)),[0, 0, 0, 1]))
     # TODO: Find the transformation matrix from the camera to the marker.
+
 
 def transmtx2twist(g):
     R = g[0:3,0:3]
