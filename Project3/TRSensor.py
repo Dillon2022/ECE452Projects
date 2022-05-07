@@ -68,7 +68,7 @@ class TRSensor(object):
 		min_sensor_values = [0]*self.numSensors
 		for j in range(0,10):
 		
-			sensor_values = self.AnalogRead()
+			sensor_values = self.AnalogRead();
 			
 			for i in range(0,self.numSensors):
 			
@@ -97,7 +97,7 @@ class TRSensor(object):
 	def	readCalibrated(self):
 		value = 0
 		#read the needed values
-		sensor_values = self.AnalogRead()
+		sensor_values = self.AnalogRead();
 
 		for i in range (0,self.numSensors):
 
@@ -113,7 +113,6 @@ class TRSensor(object):
 				
 			sensor_values[i] = value
 		
-		print("readCalibrated",sensor_values)
 		return sensor_values
 			
 	"""
@@ -153,14 +152,14 @@ class TRSensor(object):
 				
 			# only average in values that are above a noise threshold
 			if(value > 50):
-				avg += value * (i * 1000)  # this is for the weighted total,
-				sum += value                 #this is for the denominator 
+				avg += value * (i * 1000);  # this is for the weighted total,
+				sum += value;                  #this is for the denominator 
 
 		if(on_line != 1):
 			# If it last read to the left of center, return 0.
 			if(self.last_value < (self.numSensors - 1)*1000/2):
 				#print("left")
-				return 0
+				return 0;
 	
 			# If it last read to the right of center, return the max.
 			else:
@@ -170,70 +169,3 @@ class TRSensor(object):
 		self.last_value = avg/sum
 		
 		return self.last_value
-	
-GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)
-GPIO.setup(Clock,GPIO.OUT)
-GPIO.setup(Address,GPIO.OUT)
-GPIO.setup(CS,GPIO.OUT)
-GPIO.setup(DataOut,GPIO.IN,GPIO.PUD_UP)
-
-# Simple example prints accel/mag data once per second:
-if __name__ == '__main__':
-
-	from AlphaBot import AlphaBot
-	
-	maximum = 35
-	integral = 0
-	last_proportional = 0
-	
-	TR = TRSensor()
-	Ab = AlphaBot()
-	Ab.stop()
-	print("Line follow Example")
-	time.sleep(0.5)
-	for i in range(0,400):
-		TR.calibrate()
-		print(i)
-	print(TR.calibratedMin)
-	print(TR.calibratedMax)
-	time.sleep(0.5)	
-	Ab.backward()
-	while True:
-		position = TR.readLine()
-		#print(position)
-		
-		# The "proportional" term should be 0 when we are on the line.
-		proportional = position - 2000
-		
-		# Compute the derivative (change) and integral (sum) of the position.
-		derivative = proportional - last_proportional
-		integral += proportional
-		
-		# Remember the last position.
-		last_proportional = proportional
-  
-		'''
-		// Compute the difference between the two motor power settings,
-		// m1 - m2.  If this is a positive number the robot will turn
-		// to the right.  If it is a negative number, the robot will
-		// turn to the left, and the magnitude of the number determines
-		// the sharpness of the turn.  You can adjust the constants by which
-		// the proportional, integral, and derivative terms are multiplied to
-		// improve performance.
-		'''
-		power_difference = proportional/25 + derivative/100 #+ integral/1000;  
-
-		if (power_difference > maximum):
-			power_difference = maximum
-		if (power_difference < - maximum):
-			power_difference = - maximum
-		print(position,power_difference)
-		if (power_difference < 0):
-			Ab.setPWMB(maximum + power_difference)
-			Ab.setPWMA(maximum)
-		else:
-			Ab.setPWMB(maximum)
-			Ab.setPWMA(maximum - power_difference)
-			 
-
